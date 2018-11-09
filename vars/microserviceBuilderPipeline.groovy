@@ -53,6 +53,7 @@ def call(body) {
 
   // User configurable options
   def image = config.image
+  def helmRelease = (config.releaseName ?: config.image ?: "").trim()
   def build = (config.build ?: env.BUILD ?: "true").toBoolean()
   def deploy = (config.deploy ?: env.DEPLOY ?: "true").toBoolean()
   def mvnCommands = (config.mvnCommands == null) ? 'package' : config.mvnCommands
@@ -399,7 +400,7 @@ def call(body) {
 	
 	container ('helm') {
             echo "Attempting to deploy the test release"
-            def deployCommand = "helm install ${realChartFolder} --values pipeline.yaml --namespace ${testNamespace} --name ${tempHelmRelease}"
+            def deployCommand = "helm install ${realChartFolder} --values pipeline.yaml --namespace ${namespace} --name ${helmRelease}"
             if (fileExists("chart/overrides.yaml")) {
               deployCommand += " --values chart/overrides.yaml"
             }
