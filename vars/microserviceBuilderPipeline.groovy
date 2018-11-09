@@ -396,9 +396,26 @@ def call(body) {
           initalizeHelm ()
           helmInitialized = true
         }
-	      echo "Notifying Devops"
-        notifyDevops(gitCommit, fullCommitID, registry + image, imageTag, 
-          branchName, "build", projectName, projectNamespace, env.BUILD_NUMBER.toInteger())
+	
+	container ('helm') {
+            echo "Attempting to deploy the test release"
+            def deployCommand = "helm install ${realChartFolder} --values pipeline.yaml --namespace ${testNamespace} --name ${tempHelmRelease}"
+            if (fileExists("chart/overrides.yaml")) {
+              deployCommand += " --values chart/overrides.yaml"
+            }
+            if (helmSecret) {
+              echo "Adding --tls to your deploy command"
+              deployCommand += helmTlsOptions
+            }
+            testDeployAttempt = sh(script: "${deployCommand} > deploy_attempt.txt", returnStatus: true)
+            if (testDeployAttempt != 0) {
+              echo "Warning, did not deploy the test release into the test namespace successfully, error code is: ${testDeployAttempt}" 
+              echo "This build will be marked as a failure: halting after the deletion of the test namespace."
+            }
+            printFromFile("deploy_attempt.txt")
+         }
+	 echo "Notifying Devops"
+         notifyDevops(gitCommit, fullCommitID, registry + image, imageTag, branchName, "build", projectName, projectNamespace, env.BUILD_NUMBER.toInteger())
       }
     }
   }
