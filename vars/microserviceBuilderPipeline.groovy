@@ -401,7 +401,7 @@ def call(body) {
 	
 	container ('helm') {
 	    echo "Delete existing helm release"
-	    sh(script: "helm delete --purge ${helmRelease}", returnStatus: true)
+	    sh(script: "helm delete --purge --namespace ${namespace} ${helmRelease} --tls", returnStatus: true)
             echo "Deploy helm release"
             def deployCommand = "helm install ${realChartFolder} --values pipeline.yaml --namespace ${namespace} --name ${helmRelease}"
             if (fileExists("chart/overrides.yaml")) {
