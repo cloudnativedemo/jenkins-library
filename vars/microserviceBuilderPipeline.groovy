@@ -400,17 +400,18 @@ def call(body) {
         }
 	
 	container ('helm') {
-	    echo "Delete existing helm release"
-	    sh(script: "helm delete --purge ${helmRelease} --tls", returnStatus: true)
             echo "Deploy helm release"
+	    def deleteCommand = "helm delete --purge ${helmRelease}"
             def deployCommand = "helm install ${realChartFolder} --values pipeline.yaml --namespace ${namespace} --name ${helmRelease}"
             if (fileExists("chart/overrides.yaml")) {
               deployCommand += " --values chart/overrides.yaml"
             }
             if (helmSecret) {
               echo "Adding --tls to your deploy command"
+	      deleteCommand += helmTlsOptions
               deployCommand += helmTlsOptions
             }
+	    sh(script: "${deleteCommand}", returnStatus: true)
             testDeployAttempt = sh(script: "${deployCommand} > deploy_attempt.txt", returnStatus: true)
             if (testDeployAttempt != 0) {
               echo "Helm install failed, error code is: ${testDeployAttempt}" 
