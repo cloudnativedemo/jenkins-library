@@ -265,6 +265,11 @@ def call(body) {
         def yamlContent = "image:"
         yamlContent += "\n  repository: ${registry}${image}"
         if (imageTag) yamlContent += "\n  tag: \\\"${imageTag}\\\""
+	//global values
+	yamlContent += "\nglobal:\n  image:"
+        yamlContent += "\n    repository: ${registry}${image}"
+        if (imageTag) yamlContent += "\n    tag: \\\"${imageTag}\\\""
+	      
         sh "echo \"${yamlContent}\" > pipeline.yaml"
       }
 
