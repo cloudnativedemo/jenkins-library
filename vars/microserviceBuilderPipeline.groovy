@@ -299,7 +299,10 @@ def call(body) {
           }
 	
           container ('helm') {
-            echo "Attempting to deploy the test release"
+	    echo "Delete existing helm release"
+	    sh(script: "helm del --purge ${tempHelmRelease}", returnStatus: true)
+	    
+            echo "Deploy helm release"
             def deployCommand = "helm install ${realChartFolder} --wait --set test=true --values pipeline.yaml --namespace ${testNamespace} --name ${tempHelmRelease}"
             if (fileExists("chart/overrides.yaml")) {
               deployCommand += " --values chart/overrides.yaml"
@@ -310,8 +313,7 @@ def call(body) {
             }
             testDeployAttempt = sh(script: "${deployCommand} > deploy_attempt.txt", returnStatus: true)
             if (testDeployAttempt != 0) {
-              echo "Warning, did not deploy the test release into the test namespace successfully, error code is: ${testDeployAttempt}" 
-              echo "This build will be marked as a failure: halting after the deletion of the test namespace."
+              echo "Helm install failed, error code is: ${testDeployAttempt}" 
             }
             printFromFile("deploy_attempt.txt")
           }
