@@ -247,7 +247,9 @@ def call(body) {
               sh buildCommand
               if (registry) {
                 sh "docker tag ${image}:${imageTag} ${registry}${image}:${imageTag}"
+		sh "docker tag ${image}:${imageTag} ${registry}${image}:latest"
                 sh "docker push ${registry}${image}:${imageTag}"
+		sh "docker push ${registry}${image}:latest"
               }
             }
           }
