@@ -407,7 +407,7 @@ def call(body) {
 	container ('helm') {
             echo "Deploy helm release"
 	    def deleteCommand = "helm delete --purge ${helmRelease}"
-            def deployCommand = "helm install ${realChartFolder} --namespace ${namespace} --name ${helmRelease}"
+            def deployCommand = "helm install ${realChartFolder} --namespace ${namespace} --name ${helmRelease} --set license=accept"
 	    // only override values with pipeline.yaml if a new Docker image was built
             if (fileExists('Dockerfile') && fileExists('pipeline.yaml')) {
 	      deployCommand += " --values pipeline.yaml"
