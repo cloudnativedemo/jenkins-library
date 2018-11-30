@@ -407,10 +407,15 @@ def call(body) {
 	container ('helm') {
             echo "Deploy helm release"
 	    def deleteCommand = "helm delete --purge ${helmRelease}"
-            def deployCommand = "helm install ${realChartFolder} --values pipeline.yaml --namespace ${namespace} --name ${helmRelease}"
-            if (fileExists("chart/overrides.yaml")) {
+            def deployCommand = "helm install ${realChartFolder} --namespace ${namespace} --name ${helmRelease}"
+	    // only override values with pipeline.yaml if a new Docker image was built
+            if (fileExists('Dockerfile') && fileExists('pipeline.yaml')) {
+	      deployCommand += " --values pipeline.yaml"
+	    }
+	    if (fileExists("chart/overrides.yaml")) {
               deployCommand += " --values chart/overrides.yaml"
             }
+	    
             if (helmSecret) {
               echo "Adding --tls to your deploy command"
 	      deleteCommand += helmTlsOptions
